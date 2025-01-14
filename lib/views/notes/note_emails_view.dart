@@ -14,7 +14,7 @@ class NoteEmailsView extends StatefulWidget {
 
 class _NoteEmailsViewState extends State<NoteEmailsView> {
   late final FireBaseCloudStorage _notesService;
-  CloudNote? _note;
+  late CloudNote _note;
 
   @override
   void initState() {
@@ -22,67 +22,52 @@ class _NoteEmailsViewState extends State<NoteEmailsView> {
     super.initState();
   }
 
-  Future<CloudNote> _getNote(BuildContext context) {
-    if (_note != null) {
-      return Future.value(_note);
-    }
-    _note = context.getArgument<CloudNote>();
-    if (_note == null) {
-      Navigator.of(context).pop();
-    }
-    return Future.value(_note);
+  @override
+  void didChangeDependencies() {
+    _note = context.getArgument<CloudNote>()!;
+    super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
-    _note = context.getArgument<CloudNote>()!;
-    return FutureBuilder(
-        future: _getNote(context),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              return Scaffold(
-                appBar: AppBar(
-                  title: const Text('Add users to note'),
-                  actions: [
-                    IconButton(
-                      onPressed: () async {
-                        var email = await showTextInputDialog(
-                          context: context,
-                          title: 'Enter user email to share note',
-                          hint: 'Enter email here',
-                        );
-                        if (email != null) {
-                          await _notesService.addEmail(
-                              documentId: _note!.documentId, email: email);
-                        }
-                      },
-                      icon: const Icon(Icons.add),
-                    )
-                  ],
-                ),
-                body: StreamBuilder(
-                  stream:
-                      _notesService.streamEmails(documentId: _note!.documentId),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      final emails = snapshot.data as Iterable<String>;
-                      return NoteEmailsListView(
-                        emails: emails,
-                        onDeleteEmail: (email) async {
-                          await _notesService.deleteEmail(
-                              documentId: _note!.documentId, email: email);
-                        },
-                      );
-                    } else {
-                      return Text("You didn't share your note");
-                    }
-                  },
-                ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Add users to note'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              var email = await showTextInputDialog(
+                context: context,
+                title: 'Enter user email to share note',
+                hint: 'Enter email here',
               );
-            default:
-              return const CircularProgressIndicator();
+              if (email != null) {
+                await _notesService.addEmail(
+                    documentId: _note.documentId, email: email);
+              }
+            },
+            icon: const Icon(Icons.add),
+          )
+        ],
+      ),
+      body: StreamBuilder(
+        stream: _notesService.streamEmails(documentId: _note.documentId),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final emails = snapshot.data as Iterable<String>;
+            return NoteEmailsListView(
+              emails: emails,
+              onDeleteEmail: (email) async {
+                await _notesService.deleteEmail(
+                    documentId: _note.documentId, email: email);
+              },
+            );
+          } else {
+            return Text("You didn't share your note" +
+                ' stream snapshot empty'); //TODO: rm
           }
-        });
+        },
+      ),
+    );
   }
 }

@@ -27,7 +27,10 @@ class CloudNote {
   CloudNote.fromDocumentSnapshot(
       DocumentSnapshot<Map<String, dynamic>> snapshot)
       : documentId = snapshot.id,
-        ownerUserId = snapshot.data()?[ownerUserIdFieldName] as String,
-        text = snapshot.data()?[textFieldName] as String,
-        emails = snapshot.data()?[emailsFieldName];
+        ownerUserId = snapshot.data()?['user_id'] as String,
+        text = snapshot.data()?['text'] as String,
+        emails = (snapshot.data()?['emails'] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [];
 }
