@@ -45,7 +45,7 @@ class FireBaseCloudStorage {
       documentId: fetchedNote.id,
       ownerUserId: ownerUserId,
       text: '',
-      emails: const [],
+      emails: null,
     );
   }
 
@@ -65,7 +65,7 @@ class FireBaseCloudStorage {
     }
   }
 
-  Future<List<String>> getEmails({required documentId}) async {
+  Future<List<String>?> getEmails({required documentId}) async {
     try {
       return await notes
           .doc(documentId)
@@ -81,7 +81,7 @@ class FireBaseCloudStorage {
     required String email,
   }) async {
     try {
-      final emails = await getEmails(documentId: documentId);
+      final emails = await getEmails(documentId: documentId) ?? [];
       emails.add(email);
       await notes.doc(documentId).update({emailsFieldName: emails});
     } catch (e) {
@@ -94,7 +94,7 @@ class FireBaseCloudStorage {
     required String email,
   }) async {
     try {
-      final emails = await getEmails(documentId: documentId);
+      final emails = await getEmails(documentId: documentId) ?? [];
       emails.remove(email);
       await notes.doc(documentId).update({emailsFieldName: emails});
     } catch (e) {

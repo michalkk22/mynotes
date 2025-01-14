@@ -9,6 +9,7 @@ import 'package:mynotes/services/auth/firebase_auth_provider.dart';
 import 'package:mynotes/views/forgot_password_view.dart';
 import 'package:mynotes/views/login_view.dart';
 import 'package:mynotes/views/notes/create_update_note_veiw.dart';
+import 'package:mynotes/views/notes/note_email_list_view.dart';
 import 'package:mynotes/views/notes/notes_view.dart';
 import 'package:mynotes/views/register_view.dart';
 import 'package:mynotes/views/verify_email_view.dart';
@@ -27,6 +28,7 @@ void main() {
       ),
       routes: {
         createUpdateNoteRoute: (context) => const CreateUpdateNoteView(),
+        noteEmailsRoute: (context) => const NoteEmailListView(),
       },
     ),
   );

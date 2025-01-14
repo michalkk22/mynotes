@@ -7,7 +7,7 @@ class CloudNote {
   final String documentId;
   final String ownerUserId;
   final String text;
-  final List<String> emails;
+  final List<String>? emails;
 
   const CloudNote({
     required this.documentId,
@@ -20,5 +20,5 @@ class CloudNote {
       : documentId = snapshot.id,
         ownerUserId = snapshot.data()[ownerUserIdFieldName],
         text = snapshot.data()[textFieldName] as String,
-        emails = snapshot.data()[emailsFieldName] as List<String>;
+        emails = snapshot.data()[emailsFieldName] as List<String>?;
 }
