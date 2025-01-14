@@ -45,6 +45,7 @@ class FireBaseCloudStorage {
       documentId: fetchedNote.id,
       ownerUserId: ownerUserId,
       text: '',
+      emails: const [],
     );
   }
 
@@ -61,6 +62,43 @@ class FireBaseCloudStorage {
           );
     } catch (e) {
       throw CouldNotGetAllNotesException();
+    }
+  }
+
+  Future<List<String>> getEmails({required documentId}) async {
+    try {
+      return await notes
+          .doc(documentId)
+          .get()
+          .then((value) => value.data()![emailsFieldName]) as List<String>;
+    } catch (e) {
+      throw CouldNotGetEmailsException;
+    }
+  }
+
+  Future<void> addEmail({
+    required String documentId,
+    required String email,
+  }) async {
+    try {
+      final emails = await getEmails(documentId: documentId);
+      emails.add(email);
+      await notes.doc(documentId).update({emailsFieldName: emails});
+    } catch (e) {
+      throw CouldNotAddEmailNoteExcepion();
+    }
+  }
+
+  Future<void> deleteEmail({
+    required String documentId,
+    required String email,
+  }) async {
+    try {
+      final emails = await getEmails(documentId: documentId);
+      emails.remove(email);
+      await notes.doc(documentId).update({emailsFieldName: emails});
+    } catch (e) {
+      throw CouldNotDeleteEmailNoteExcepion();
     }
   }
 }
