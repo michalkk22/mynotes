@@ -35,6 +35,11 @@ class FireBaseCloudStorage {
           .map((doc) => CloudNote.fromSnapshot(doc))
           .where((note) => note.ownerUserId == ownerUserId));
 
+  Stream<Iterable<String>?> streamEmails({required String documentId}) => notes
+      .doc(documentId)
+      .snapshots()
+      .map((doc) => CloudNote.fromDocumentSnapshot(doc).emails);
+
   Future<CloudNote> createNewNote({required String ownerUserId}) async {
     final document = await notes.add({
       ownerUserIdFieldName: ownerUserId,
@@ -65,14 +70,23 @@ class FireBaseCloudStorage {
     }
   }
 
-  Future<List<String>?> getEmails({required documentId}) async {
+  Future<List<String>?> getEmails({required String documentId}) async {
+    print('getEmails.documentId: $documentId');
     try {
-      return await notes
-          .doc(documentId)
-          .get()
-          .then((value) => value.data()![emailsFieldName]) as List<String>;
+      DocumentSnapshot snapshot = await notes.doc(documentId).get();
+
+      if (snapshot.data() != null &&
+          (snapshot.data() as Map<String, dynamic>)
+              .containsKey(emailsFieldName)) {
+        print('Emails found: ${snapshot[emailsFieldName]}');
+        return List<String>.from(snapshot[emailsFieldName] as List);
+      } else {
+        print('Emails field is missing or null.');
+        return null;
+      }
     } catch (e) {
-      throw CouldNotGetEmailsException;
+      print('Error in getEmails: $e');
+      throw CouldNotGetEmailsException();
     }
   }
 
@@ -81,10 +95,20 @@ class FireBaseCloudStorage {
     required String email,
   }) async {
     try {
+      print('Adding email: $email');
       final emails = await getEmails(documentId: documentId) ?? [];
-      emails.add(email);
-      await notes.doc(documentId).update({emailsFieldName: emails});
+
+      if (!emails.contains(email)) {
+        emails.add(email);
+        await notes.doc(documentId).update({emailsFieldName: emails});
+        print('Email added successfully.');
+      } else {
+        print('Email already exists in the list.');
+      }
+    } on CouldNotGetEmailsException {
+      rethrow;
     } catch (e) {
+      print('Error in addEmail: $e');
       throw CouldNotAddEmailNoteExcepion();
     }
   }
