@@ -20,6 +20,7 @@ class NotesView extends StatefulWidget {
 class _NotesViewState extends State<NotesView> {
   late final FireBaseCloudStorage _notesService;
   String get userId => AuthService.firebase().currentUser!.id;
+  String get userEmail => AuthService.firebase().currentUser!.email;
 
   @override
   void initState() {
@@ -70,31 +71,74 @@ class _NotesViewState extends State<NotesView> {
           )
         ],
       ),
-      body: StreamBuilder(
-        stream: _notesService.allNotes(ownerUserId: userId),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.waiting:
-            case ConnectionState.active:
-              if (snapshot.hasData) {
-                final allNotes = snapshot.data as Iterable<CloudNote>;
-                return NotesListView(
-                  notes: allNotes,
-                  onDeleteNote: (note) async {
-                    await _notesService.deleteNote(documentId: note.documentId);
-                  },
-                  onTap: (note) {
-                    Navigator.of(context)
-                        .pushNamed(createUpdateNoteRoute, arguments: note);
-                  },
-                );
-              } else {
-                return const CircularProgressIndicator();
-              }
-            default:
-              return const CircularProgressIndicator();
-          }
-        },
+      body: Column(
+        children: [
+          Expanded(
+            child: StreamBuilder(
+              stream: _notesService.allNotes(ownerUserId: userId),
+              builder: (context, snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.waiting:
+                  case ConnectionState.active:
+                    if (snapshot.hasData) {
+                      final allNotes = snapshot.data as Iterable<CloudNote>;
+                      return NotesListView(
+                        notes: allNotes,
+                        onDeleteNote: (note) async {
+                          await _notesService.deleteNote(
+                              documentId: note.documentId);
+                        },
+                        onTap: (note) {
+                          Navigator.of(context).pushNamed(createUpdateNoteRoute,
+                              arguments: note);
+                        },
+                      );
+                    } else {
+                      return const CircularProgressIndicator();
+                    }
+                  default:
+                    return const CircularProgressIndicator();
+                }
+              },
+            ),
+          ),
+          SizedBox(
+            height: 5,
+            child: Container(
+              color: Color.fromRGBO(255, 255, 255, 0.5),
+            ),
+          ),
+          Text('Shared to you'),
+          Expanded(
+            child: StreamBuilder(
+              stream: _notesService.sharedNotes(email: userEmail),
+              builder: (context, snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.waiting:
+                  case ConnectionState.active:
+                    if (snapshot.hasData) {
+                      final allNotes = snapshot.data as Iterable<CloudNote>;
+                      return NotesListView(
+                        notes: allNotes,
+                        onDeleteNote: (note) async {
+                          await _notesService.deleteNote(
+                              documentId: note.documentId);
+                        },
+                        onTap: (note) {
+                          Navigator.of(context).pushNamed(createUpdateNoteRoute,
+                              arguments: note);
+                        },
+                      );
+                    } else {
+                      return const CircularProgressIndicator();
+                    }
+                  default:
+                    return const CircularProgressIndicator();
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -63,8 +63,7 @@ class _NoteEmailsViewState extends State<NoteEmailsView> {
               },
             );
           } else {
-            return Text("You didn't share your note" +
-                ' stream snapshot empty'); //TODO: rm
+            return Text("You didn't share your note");
           }
         },
       ),
